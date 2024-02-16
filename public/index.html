@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.3/dist/web3.min.js"></script>
+    <script>
+        window.addEventListener('load', async () => {
+            if (window.ethereum) {
+                window.web3 = new Web3(window.ethereum);
+                await window.ethereum.enable();
+            } else if (window.web3) {
+                window.web3 = new Web3(window.web3.currentProvider);
+            } else {
+                console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
+            }
+        });
+
+        async function addToBlockchain() {
+            const contractAddress = '0x0b9547dB2d8c81E36E450BeC1F7C708CE438aA08'; // Replace with your contract address
+            const abi = [
+	{
+		"inputs": [
+			{
+				"internalType": "address payable",
+				"name": "receiver",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "message",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "keyword",
+				"type": "string"
+			}
+		],
+		"name": "addToBlockchain",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "receiver",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "message",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "keyword",
+				"type": "string"
+			}
+		],
+		"name": "Transfer",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "getAllTransactions",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "sender",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "receiver",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "message",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "keyword",
+						"type": "string"
+					}
+				],
+				"internalType": "struct Transactions.TransferStruct[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getTransactionCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]; // Replace with your contract ABI
+
+            const contract = new window.web3.eth.Contract(abi, contractAddress);
+
+            const receiver = document.getElementById('receiver').value;
+            const amountInEther = document.getElementById('amount').value;
+            const amountInWei = window.web3.utils.toWei(amountInEther, 'ether'); // Convert to Wei
+            const message = document.getElementById('message').value;
+            const keyword = document.getElementById('keyword').value;
+
+            try {
+                const transaction = await contract.methods.addToBlockchain(receiver, amountInWei, message, keyword).send({ from: window.ethereum.selectedAddress });
+                
+                // Transaction successful, display message
+                const messageDiv = document.getElementById('messageDiv');
+                messageDiv.innerHTML = `Transaction added to blockchain! Transaction hash: ${transaction.transactionHash}`;
+            } catch (error) {
+                // Transaction failed, display error message
+                const messageDiv = document.getElementById('messageDiv');
+                messageDiv.innerHTML = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Transactions</h1>
+    <form onsubmit="event.preventDefault(); addToBlockchain()">
+        <label for="receiver">Receiver Address:</label><br>
+        <input type="text" id="receiver" name="receiver"><br>
+        <label for="amount">Amount (in Ether):</label><br>
+        <input type="number" id="amount" name="amount" step="0.0001"><br>
+        <label for="message">Message:</label><br>
+        <input type="text" id="message" name="message"><br>
+        <label for="keyword">Keyword:</label><br>
+        <input type="text" id="keyword" name="keyword"><br><br>
+        <button type="submit">Add Transaction</button>
+    </form>
+    <div id="messageDiv"></div> <!-- Div to display the message -->
+</body>
+</html>
